@@ -9,11 +9,9 @@ var readline = require("readline")
 var spotify = new Spotify(keys.spotify);
 
 var terminalCommand = process.argv[2];
-var terminalArgs = process.argv.slice(2).join(" ");
+var terminalArgs = process.argv.slice(3).join(" ");
 
 function concertThis(artist) {
-    // let artist = process.argv.slice(2).join(" ")
-    console.log(artist)
     var queryURL = "https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp"
     axios.get(queryURL).then(function (response) {
         let selectedEvent = response.data[0]
@@ -34,7 +32,7 @@ function movieThis(movie) {
                 //     Title of the movie.
                 console.log("Title: ", movieInfo.Title);
                 //   * Year the movie came out.
-                console.log("Title: ", movieInfo.Year);
+                console.log("Year: ", movieInfo.Year);
                 //   * IMDB Rating of the movie.
                 console.log("Rating: ", movieInfo.imdbRating);
                 //   * Rotten Tomatoes Rating of the movie.
@@ -76,7 +74,7 @@ function runCommands(command, args) {
     if (command === "concert-this") {
         concertThis(args)
     }
-    if (command === "spotify-this") {
+    if (command === "spotify-this-song") {
         spotifyThisSong(args);
     }
     if (command === 'movie-this') {
@@ -95,6 +93,8 @@ function filter() {
             splitLine = line.split(",");
             runCommands(splitLine[0], splitLine[1]);
         });
+    } else{
+        runCommands(terminalCommand, terminalArgs);
     }
 }
 
