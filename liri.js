@@ -1,9 +1,15 @@
 require("dotenv").config();
+
 var keys = require("./keys.js");
 var axios = require("axios");
-var nspot = require("node-spotify-api");
+var Spotify = require("node-spotify-api");
+var fs = require("fs");
+var readline = require("readline")
 
-// var spotify = new Spotify(keys.spotify);
+var spotify = new Spotify(keys.spotify);
+
+var terminalCommand = process.argv[2];
+var terminalArgs = process.argv.slice(2).join(" ");
 
 function concertThis(artist) {
     // let artist = process.argv.slice(2).join(" ")
@@ -26,35 +32,70 @@ function movieThis(movie) {
             function (response) {
                 var movieInfo = response.data
                 //     Title of the movie.
-                console.log(movieInfo);
+                console.log("Title: ", movieInfo.Title);
                 //   * Year the movie came out.
+                console.log("Title: ", movieInfo.Year);
                 //   * IMDB Rating of the movie.
+                console.log("Rating: ", movieInfo.imdbRating);
                 //   * Rotten Tomatoes Rating of the movie.
+                console.log("Rotten Tomatoes: ", movieInfo.Ratings[1].Value);
                 //   * Country where the movie was produced.
+                console.log("Country: ", movieInfo.Country);
                 //   * Language of the movie.
+                console.log("Language: ", movieInfo.Language);
                 //   * Plot of the movie.
+                console.log("Plot: ", movieInfo.Plot);
                 //   * Actors in the movie.
             })
         .catch(function (error) {
-            if (error.response) {
-                // The request was made and the server responded with a status code
-                // that falls out of the range of 2xx
-                console.log("---------------Data---------------");
-                console.log(error.response.data);
-                console.log("---------------Status---------------");
-                console.log(error.response.status);
-                console.log("---------------Status---------------");
-                console.log(error.response.headers);
-            } else if (error.request) {
-                // The request was made but no response was received
-                // `error.request` is an object that comes back with details pertaining to the error that occurred.
-                console.log(error.request);
-            } else {
-                // Something happened in setting up the request that triggered an Error
-                console.log("Error", error.message);
-            }
-            console.log(error.config);
+            throw error;
         });
 }
 
-movieThis("titanic");
+function spotifyThisSong(songname) {
+    spotify.search({
+        type: 'track',
+        query: songname
+    }, function (err, data) {
+        if (err) {
+            return console.log('Error occurred: ' + err);
+        }
+        let song = data.tracks.items[0];
+        // Artist(s)
+        console.log("Artist: ", song.artists[0].name)
+        // The song's name
+        console.log("Title: ", song.name);
+        // A preview link of the song from Spotify
+        console.log("Preview song: ", song.external_urls.spotify);
+        // The album that the song is from
+        console.log("Album: ", song.album.name);
+    });
+}
+
+function runCommands(command, args) {
+    if (command === "concert-this") {
+        concertThis(args)
+    }
+    if (command === "spotify-this") {
+        spotifyThisSong(args);
+    }
+    if (command === 'movie-this') {
+        movieThis(args);
+    }
+}
+
+function filter() {
+    if (terminalCommand === 'do-what-it-says') {
+        const rl = readline.createInterface({
+            input: fs.createReadStream('random.txt'),
+            crlfDelay: Infinity
+        });
+
+        rl.on('line', (line) => {
+            splitLine = line.split(",");
+            runCommands(splitLine[0], splitLine[1]);
+        });
+    }
+}
+
+filter();
